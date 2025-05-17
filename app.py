@@ -173,7 +173,11 @@ if uploaded_file is not None:
             with loading_placeholder.container():
                 with st.spinner("Exporting cq table... Please wait."):
                     result_table = export_cq(run)
-                    show_result_table(result_table, cq_placeholder)
+                    # Check if result_table is valid before assigning
+                    if result_table is not None and not result_table.empty:
+                        show_result_table(result_table, cq_placeholder)
+                    else:
+                        raise ValueError("Result table is empty or invalid.")
         except Exception as e:
             st.error(f"An error occurred while parsing the lc96p file: {e}")
         st.session_state.file_id = uploaded_file.file_id
