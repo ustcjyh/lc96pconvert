@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
 
 
 import io
@@ -11,6 +10,7 @@ import sys
 import tempfile
 
 import pandas as pd
+import numpy as np
 
 from rdmlpython.rdml import Rdml
 
@@ -22,6 +22,7 @@ logging.basicConfig(
 
 
 def reshape_result(result_table):
+    # 确保没有出现 np.NaN，而是 np.nan
     df = result_table.loc[
         :, ["well", "Cq (mean eff) - no plateau - stat efficiency"]
     ]
@@ -35,6 +36,12 @@ def reshape_result(result_table):
             values="Cq (mean eff) - no plateau - stat efficiency",
         )
     )
+
+    # 如果 df_plate 是空的或无效的，抛出错误
+    if df_plate.empty:
+        logging.error("Resulting df_plate is empty!")
+        sys.exit(1)
+    
     return df_plate
 
 
@@ -107,7 +114,8 @@ def export_cq(run):
         verbose=False,
     )
     if "noRawData" in cli_result:
-        print(cli_result["noRawData"])
+        logging.error(cli_result["noRawData"])
+
     result_table = reshape_result(
         pd.read_csv(io.StringIO(cli_result["resultsCSV"]), sep="\t")
     )
@@ -116,8 +124,6 @@ def export_cq(run):
 
 
 # create 3 files for each input
-
-
 def convert_file(input_file, rdml_file, excel_file):
     with tempfile.NamedTemporaryFile(
         mode="w+", suffix=".tsv", delete=True
@@ -128,10 +134,13 @@ def convert_file(input_file, rdml_file, excel_file):
             "rdmlpython",
             "rdml.py",
         )
+
+        # 打印路径和环境，确保正确调用
+        logging.info(f"脚本路径: {script_path}")
+        logging.info(f"当前 Python 解释器: {sys.executable}")
+
         subprocess.call(
             [
-                # /home/adminuser/venv/bin/python
-                # "python3",
                 sys.executable,
                 script_path,
                 "-lrp",
@@ -148,6 +157,7 @@ def convert_file(input_file, rdml_file, excel_file):
                 tsv_file,
             ]
         )
+
         df = pd.read_csv(tsv_file, sep="\t").loc[
             :, ["well", "Cq (mean eff) - no plateau - stat efficiency"]
         ]
@@ -162,6 +172,11 @@ def convert_file(input_file, rdml_file, excel_file):
         )
     )
 
+    # 如果 df_plate 是空的或无效的，抛出错误
+    if df_plate.empty:
+        logging.error("Resulting df_plate is empty!")
+        sys.exit(1)
+
     df_plate.to_excel(excel_file, sheet_name="quant", engine="xlsxwriter")
     return df_plate
 
@@ -169,14 +184,23 @@ def convert_file(input_file, rdml_file, excel_file):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit("Usage: run.py input_file.lc96p")
+    
     input_file = sys.argv[1]
+    
+    # 确保返回的对象有效
     run = extract_run(input_file)
+    
+    # 检查所有表格的有效性
     amp_table = export_amp(run)
     melt_table = export_melt(run)
     result_table = export_cq(run)
-    print(amp_table)
-    print(melt_table)
-    print(result_table)
+    
+    # 打印表格内容进行检查
+    logging.info(f"Amplification Table: {amp_table}")
+    logging.info(f"Melt Curve Table: {melt_table}")
+    logging.info(f"Result Table: {result_table}")
+    
     rdml_file = input_file.rsplit(".", 1)[0] + ".rdml"
     excel_file = input_file.rsplit(".", 1)[0] + ".xlsx"
+    
     convert_file(input_file, rdml_file, excel_file)
