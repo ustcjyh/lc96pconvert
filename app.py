@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2023 Ye Chang yech1990@gmail.com
-# Distributed under terms of the GNU license.
-
-
 import io
 import math
 import os
