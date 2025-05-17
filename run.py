@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2022 Ye Chang yech1990@gmail.com
-# Distributed under terms of the GNU license.
-#
-# Created: 2022-06-05 17:26
+
 
 import io
 import logging
