@@ -148,9 +148,9 @@ if uploaded_file is not None:
         temp_file.write(uploaded_file.getvalue())
         temp_file_path = temp_file.name
 
-    # 确保 session_state 中存在 result_table
+    # Ensure session_state has the result_table initialized
     if "result_table" not in st.session_state:
-        st.session_state.result_table = None  # 或者初始化为一个适合的默认值
+        st.session_state.result_table = pd.DataFrame()  # Initialize to empty DataFrame
 
     loading_placeholder = st.empty()
     amp_placeholder = st.empty()
@@ -175,17 +175,20 @@ if uploaded_file is not None:
             with loading_placeholder.container():
                 with st.spinner("Exporting cq table... Please wait."):
                     result_table = export_cq(run)
+
                     # Check if result_table is valid before assigning
                     if result_table is not None and not result_table.empty:
                         show_result_table(result_table, cq_placeholder)
                     else:
-                        raise ValueError("Result table is empty or invalid.")
+                        st.error("Result table is empty or invalid.")
+                        result_table = pd.DataFrame()  # Initialize with empty DataFrame
+
         except Exception as e:
             st.error(f"An error occurred while parsing the lc96p file: {e}")
         st.session_state.file_id = uploaded_file.file_id
         st.session_state.amp_table = amp_table
         st.session_state.melt_table = melt_table
-        st.session_state.result_table = result_table  # 保证结果表格在 session_state 中
+        st.session_state.result_table = result_table  # Ensure result_table is assigned
     else:
         amp_table = st.session_state.amp_table
         show_amp_table(amp_table, amp_placeholder)
@@ -194,5 +197,5 @@ if uploaded_file is not None:
         result_table = st.session_state.result_table
         show_result_table(result_table, cq_placeholder)
 
-    # 删除临时文件
+    # Delete the temporary files
     os.remove(temp_file_path)
