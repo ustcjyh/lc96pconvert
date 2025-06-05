@@ -10,7 +10,7 @@ import sys
 import tempfile
 
 import pandas as pd
-import numpy as np
+import numpy as np  # 使用 np.nan 替代 np.NaN
 
 from rdmlpython.rdml import Rdml
 
