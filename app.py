@@ -41,18 +41,20 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 def show_result_table(result_table, placeholder):
     with placeholder.container():
         st.subheader("Cq values", divider="rainbow")
-        st.dataframe(
-            result_table.style.background_gradient(axis=None).format("{:.2f}"),
-            use_container_width=True,
-            height=(result_table.shape[0] + 1) * 35 + 3,
-        )
-
-        df_xlsx = to_excel(result_table)
-        st.download_button(
-            label="📥 Download Current Result",
-            data=df_xlsx,
-            file_name=name_base + ".xlsx",
-        )
+        if result_table is not None and not result_table.empty:
+            st.dataframe(
+                result_table.style.background_gradient(axis=None).format("{:.2f}"),
+                use_container_width=True,
+                height=(result_table.shape[0] + 1) * 35 + 3,
+            )
+            df_xlsx = to_excel(result_table)
+            st.download_button(
+                label="📥 Download Current Result",
+                data=df_xlsx,
+                file_name=name_base + ".xlsx",
+            )
+        else:
+            st.error("No result data available to display.")
 
 
 def show_amp_table(amp_table, placeholder):
