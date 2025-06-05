@@ -143,12 +143,14 @@ def show_melt_table(melt_table, placeholder):
 # File uploader widget
 uploaded_file = st.file_uploader("Choose a PDF file", type="lc96p")
 if uploaded_file is not None:
-    with tempfile.NamedTemporaryFile(
-        delete=False, suffix=".lc96p"
-    ) as temp_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".lc96p") as temp_file:
         name_base = uploaded_file.name.rsplit(".")[0]
         temp_file.write(uploaded_file.getvalue())
         temp_file_path = temp_file.name
+
+    # 确保 session_state 中存在 result_table
+    if "result_table" not in st.session_state:
+        st.session_state.result_table = None  # 或者初始化为一个适合的默认值
 
     loading_placeholder = st.empty()
     amp_placeholder = st.empty()
@@ -183,7 +185,7 @@ if uploaded_file is not None:
         st.session_state.file_id = uploaded_file.file_id
         st.session_state.amp_table = amp_table
         st.session_state.melt_table = melt_table
-        st.session_state.result_table = result_table
+        st.session_state.result_table = result_table  # 保证结果表格在 session_state 中
     else:
         amp_table = st.session_state.amp_table
         show_amp_table(amp_table, amp_placeholder)
@@ -192,5 +194,5 @@ if uploaded_file is not None:
         result_table = st.session_state.result_table
         show_result_table(result_table, cq_placeholder)
 
-    # Delete the temporary files
+    # 删除临时文件
     os.remove(temp_file_path)
