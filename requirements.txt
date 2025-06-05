@@ -1,6 +1,6 @@
-pandas
-plotly
-streamlit
-pyarrow
-rdmlpython
-numpy
+pandas==1.5.3
+plotly==5.9.0
+streamlit==1.22.0
+pyarrow==11.0.0
+rdmlpython==1.1.0
+numpy==1.24.2
